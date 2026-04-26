@@ -44,6 +44,7 @@ Backend: https://your-render-link
 ---
 
 ## 📂 Project Structure
+```
 frontend/
 ├── src/
 │ ├── components/
@@ -57,7 +58,7 @@ backend/
 │ ├── models/
 │ ├── schemas/
 │ └── main.py
-
+```
 
 ---
 
