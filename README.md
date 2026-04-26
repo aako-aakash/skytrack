@@ -67,7 +67,7 @@ backend/
 ### 1️⃣ Clone Repository
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/skytrack.git
+git clone https://github.com/aako-aakash/skytrack.git
 cd skytrack
 ```
 2️⃣ Backend Setup
