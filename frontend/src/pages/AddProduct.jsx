@@ -1,6 +1,7 @@
 import { useState } from "react";
 import API from "../services/api";
 import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 
 export default function AddProduct() {
   const navigate = useNavigate();
@@ -12,14 +13,13 @@ export default function AddProduct() {
     quantity: "",
   });
 
-  const [loading, setLoading] = useState(false); 
-
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (loading) return; // prevent double click
-
-    setLoading(true);
+    if (!form.name || !form.price || !form.quantity) {
+      toast.error("Please fill all required fields");
+      return;
+    }
 
     try {
       await API.post("/products/", {
@@ -27,6 +27,8 @@ export default function AddProduct() {
         price: Number(form.price),
         quantity: Number(form.quantity),
       });
+
+      toast.success("Product added successfully 🚀");
 
       // clear form
       setForm({
@@ -41,9 +43,7 @@ export default function AddProduct() {
 
     } catch (err) {
       console.error(err);
-      alert("Error adding product");
-    } finally {
-      setLoading(false);
+      toast.error("Failed to add product ❌");
     }
   };
 
@@ -59,24 +59,22 @@ export default function AddProduct() {
           className="bg-white/5 backdrop-blur-xl border border-white/10 p-6 rounded-2xl space-y-4 shadow-lg"
         >
           <input
-            className="w-full p-3 rounded-lg bg-white/10 text-white placeholder-gray-400 outline-none focus:ring-2 focus:ring-purple-500"
+            className="w-full p-3 rounded-lg bg-white/10 text-white"
             placeholder="Name"
             value={form.name}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
           />
 
           <input
-            className="w-full p-3 rounded-lg bg-white/10 text-white placeholder-gray-400 outline-none focus:ring-2 focus:ring-purple-500"
+            className="w-full p-3 rounded-lg bg-white/10 text-white"
             placeholder="Description"
             value={form.description}
-            onChange={(e) =>
-              setForm({ ...form, description: e.target.value })
-            }
+            onChange={(e) => setForm({ ...form, description: e.target.value })}
           />
 
           <input
             type="number"
-            className="w-full p-3 rounded-lg bg-white/10 text-white placeholder-gray-400 outline-none focus:ring-2 focus:ring-purple-500"
+            className="w-full p-3 rounded-lg bg-white/10 text-white"
             placeholder="Price"
             value={form.price}
             onChange={(e) => setForm({ ...form, price: e.target.value })}
@@ -84,24 +82,14 @@ export default function AddProduct() {
 
           <input
             type="number"
-            className="w-full p-3 rounded-lg bg-white/10 text-white placeholder-gray-400 outline-none focus:ring-2 focus:ring-purple-500"
+            className="w-full p-3 rounded-lg bg-white/10 text-white"
             placeholder="Quantity"
             value={form.quantity}
-            onChange={(e) =>
-              setForm({ ...form, quantity: e.target.value })
-            }
+            onChange={(e) => setForm({ ...form, quantity: e.target.value })}
           />
 
-          <button
-            type="submit"
-            disabled={loading}
-            className={`w-full p-3 rounded-lg font-semibold transition ${
-              loading
-                ? "bg-gray-500 cursor-not-allowed"
-                : "bg-gradient-to-r from-purple-500 to-indigo-500 hover:scale-[1.02]"
-            }`}
-          >
-            {loading ? "Adding..." : "Add Product"}
+          <button className="w-full bg-gradient-to-r from-purple-500 to-indigo-500 p-3 rounded-lg font-semibold">
+            Add Product
           </button>
         </form>
       </div>

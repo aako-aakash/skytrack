@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import API from "../services/api";
 import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 import {
   BarChart,
   Bar,
@@ -25,6 +26,7 @@ export default function Dashboard() {
       setProducts(res.data);
     } catch (err) {
       console.error(err);
+      toast.error("Failed to fetch products ❌");
     }
   };
 
@@ -32,12 +34,41 @@ export default function Dashboard() {
     fetchProducts();
   }, []);
 
-  const handleDelete = async (id) => {
+  //  DELETE WITH UNDO
+  const handleDelete = async (product) => {
+    const previousProducts = [...products];
+
+    // remove instantly (optimistic UI)
+    setProducts((prev) => prev.filter((p) => p.id !== product.id));
+
+    const toastId = toast(
+      (t) => (
+        <div className="flex items-center gap-4">
+          <span>Product deleted</span>
+
+          <button
+            onClick={() => {
+              // undo
+              setProducts(previousProducts);
+              toast.dismiss(t.id);
+              toast.success("Restored ✅");
+            }}
+            className="bg-blue-500 px-3 py-1 rounded text-white"
+          >
+            Undo
+          </button>
+        </div>
+      ),
+      { duration: 5000 }
+    );
+
     try {
-      await API.delete(`/products/${id}`);
-      fetchProducts();
+      await API.delete(`/products/${product.id}`);
     } catch (err) {
       console.error(err);
+      setProducts(previousProducts);
+      toast.error("Delete failed ❌");
+      toast.dismiss(toastId);
     }
   };
 
@@ -49,7 +80,6 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-8">
-
       {/* TITLE */}
       <h1 className="text-3xl text-white font-bold">📊 Dashboard</h1>
 
@@ -64,6 +94,12 @@ export default function Dashboard() {
 
       {/* PRODUCT LIST */}
       <div className="grid gap-4">
+        {filteredProducts.length === 0 && (
+          <p className="text-gray-400 text-center">
+            No products found 🚀
+          </p>
+        )}
+
         {filteredProducts.map((p) => (
           <div
             key={p.id}
@@ -87,14 +123,14 @@ export default function Dashboard() {
             <div className="space-x-2">
               <button
                 onClick={() => navigate(`/edit/${p.id}`)}
-                className="bg-purple-500 px-3 py-1 rounded hover:bg-purple-600"
+                className="bg-purple-500 px-3 py-1 rounded-lg hover:bg-purple-600 transition"
               >
                 Edit
               </button>
 
               <button
-                onClick={() => handleDelete(p.id)}
-                className="bg-red-500 px-3 py-1 rounded hover:bg-red-600"
+                onClick={() => handleDelete(p)}
+                className="bg-red-500/90 hover:bg-red-600 px-3 py-1 rounded-lg transition shadow-md"
               >
                 Delete
               </button>
@@ -105,7 +141,6 @@ export default function Dashboard() {
 
       {/* CHARTS */}
       <div className="grid md:grid-cols-2 gap-6">
-
         {/* PRICE CHART */}
         <div className="bg-white/5 p-6 rounded-xl border border-white/10 shadow-xl hover:shadow-purple-500/20 transition">
           <h2 className="text-white mb-4 text-lg font-semibold">
@@ -114,7 +149,6 @@ export default function Dashboard() {
 
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={filteredProducts}>
-
               <defs>
                 <linearGradient id="colorPrice" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor="#a78bfa" />
@@ -140,10 +174,8 @@ export default function Dashboard() {
                 radius={[10, 10, 0, 0]}
                 animationDuration={1200}
               >
-                {/* ✅ FIXED SMALL VALUE ISSUE */}
                 <LabelList dataKey="price" position="top" />
               </Bar>
-
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -165,10 +197,7 @@ export default function Dashboard() {
                 animationDuration={1200}
               >
                 {filteredProducts.map((_, index) => (
-                  <Cell
-                    key={index}
-                    fill={COLORS[index % COLORS.length]}
-                  />
+                  <Cell key={index} fill={COLORS[index % COLORS.length]} />
                 ))}
               </Pie>
 

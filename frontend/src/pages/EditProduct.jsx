@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import API from "../services/api";
+import toast from "react-hot-toast";
 
 export default function EditProduct() {
   const { id } = useParams();
@@ -13,36 +14,14 @@ export default function EditProduct() {
     quantity: "",
   });
 
-  const [loading, setLoading] = useState(false);
-  const [fetching, setFetching] = useState(true);
-
-  // Fetch product
   useEffect(() => {
-    const fetchProduct = async () => {
-      try {
-        const res = await API.get(`/products/${id}`);
-        setForm({
-          name: res.data.name || "",
-          description: res.data.description || "",
-          price: res.data.price || "",
-          quantity: res.data.quantity || "",
-        });
-      } catch (err) {
-        console.error(err);
-        alert("Failed to load product");
-      } finally {
-        setFetching(false);
-      }
-    };
-
-    fetchProduct();
+    API.get(`/products/${id}`).then((res) =>
+      setForm(res.data)
+    );
   }, [id]);
 
   const handleUpdate = async (e) => {
     e.preventDefault();
-
-    if (loading) return;
-    setLoading(true);
 
     try {
       await API.put(`/products/${id}`, {
@@ -51,25 +30,14 @@ export default function EditProduct() {
         quantity: Number(form.quantity),
       });
 
-      alert("✅ Product updated!");
+      toast.success("Product updated successfully ✨");
       navigate("/dashboard");
 
     } catch (err) {
       console.error(err);
-      alert("Error updating product");
-    } finally {
-      setLoading(false);
+      toast.error("Update failed ❌");
     }
   };
-
-  // Loading screen
-  if (fetching) {
-    return (
-      <div className="text-white text-center mt-20">
-        Loading product...
-      </div>
-    );
-  }
 
   return (
     <div className="flex justify-center mt-10">
@@ -80,52 +48,40 @@ export default function EditProduct() {
 
         <form
           onSubmit={handleUpdate}
-          className="bg-white/5 backdrop-blur-xl border border-white/10 p-6 rounded-2xl space-y-4 shadow-lg"
+          className="bg-white/5 backdrop-blur-xl border border-white/10 p-6 rounded-2xl space-y-4"
         >
           <input
-            className="w-full p-3 rounded-lg bg-white/10 text-white placeholder-gray-400 outline-none focus:ring-2 focus:ring-purple-500"
-            placeholder="Name"
             value={form.name}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
+            className="w-full p-3 rounded-lg bg-white/10 text-white"
           />
 
           <input
-            className="w-full p-3 rounded-lg bg-white/10 text-white placeholder-gray-400 outline-none focus:ring-2 focus:ring-purple-500"
-            placeholder="Description"
             value={form.description}
             onChange={(e) =>
               setForm({ ...form, description: e.target.value })
             }
+            className="w-full p-3 rounded-lg bg-white/10 text-white"
           />
 
           <input
             type="number"
-            className="w-full p-3 rounded-lg bg-white/10 text-white placeholder-gray-400 outline-none focus:ring-2 focus:ring-purple-500"
-            placeholder="Price"
             value={form.price}
             onChange={(e) => setForm({ ...form, price: e.target.value })}
+            className="w-full p-3 rounded-lg bg-white/10 text-white"
           />
 
           <input
             type="number"
-            className="w-full p-3 rounded-lg bg-white/10 text-white placeholder-gray-400 outline-none focus:ring-2 focus:ring-purple-500"
-            placeholder="Quantity"
             value={form.quantity}
             onChange={(e) =>
               setForm({ ...form, quantity: e.target.value })
             }
+            className="w-full p-3 rounded-lg bg-white/10 text-white"
           />
 
-          <button
-            type="submit"
-            disabled={loading}
-            className={`w-full p-3 rounded-lg font-semibold transition ${
-              loading
-                ? "bg-gray-500 cursor-not-allowed"
-                : "bg-gradient-to-r from-purple-500 to-indigo-500 hover:scale-[1.02]"
-            }`}
-          >
-            {loading ? "Updating..." : "Update Product"}
+          <button className="w-full bg-gradient-to-r from-purple-500 to-indigo-500 p-3 rounded-lg font-semibold">
+            Update Product
           </button>
         </form>
       </div>
