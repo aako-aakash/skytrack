@@ -8,8 +8,8 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = "HS256"
 
-def hash_password(password):
-    return pwd_context.hash(password)
+def hash_password(password: str):
+    return pwd_context.hash(password[:72])
 
 def verify_password(plain, hashed):
     return pwd_context.verify(plain, hashed)
