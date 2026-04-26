@@ -6,7 +6,9 @@ from app.models.product import Product
 from app.schemas.product import ProductCreate
 from app.api.deps import get_current_user
 
-router = APIRouter()
+router = APIRouter(
+     tags=["Products"]
+)
 
 
 @router.post("/products/")

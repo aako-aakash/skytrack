@@ -1,21 +1,31 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from jose import jwt
 from fastapi.security import OAuth2PasswordRequestForm
-import os
+from dotenv import load_dotenv
 
 from app.db.database import get_db
 from app.models.user import User
-from app.core.security import verify_password, get_password_hash
+from app.core.security import verify_password, get_password_hash, create_token
 
-router = APIRouter()
+#  load env
+load_dotenv()
 
-SECRET_KEY = os.getenv("SECRET_KEY")
-ALGORITHM = os.getenv("ALGORITHM", "HS256")
+router = APIRouter(
+    tags=["Auth"]
+)
 
 
+# =========================
+#    SIGNUP
+# =========================
 @router.post("/auth/signup")
 def signup(user_data: dict, db: Session = Depends(get_db)):
+
+    # check if user already exists
+    existing_user = db.query(User).filter(User.email == user_data["email"]).first()
+    if existing_user:
+        raise HTTPException(status_code=400, detail="User already exists")
+
     user = User(
         email=user_data["email"],
         hashed_password=get_password_hash(user_data["password"])
@@ -25,9 +35,12 @@ def signup(user_data: dict, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(user)
 
-    return {"message": "User created"}
+    return {"message": "User created successfully"}
 
 
+# =========================
+#    LOGIN
+# =========================
 @router.post("/auth/login")
 def login(
     form_data: OAuth2PasswordRequestForm = Depends(),
@@ -38,11 +51,10 @@ def login(
     if not user or not verify_password(form_data.password, user.hashed_password):
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
-    # 🔥 FIX: INCLUDE USER ID
-    token = jwt.encode(
-        {"user_id": user.id},
-        SECRET_KEY,
-        algorithm=ALGORITHM
-    )
+    #  USE CENTRAL TOKEN FUNCTION
+    token = create_token({"user_id": user.id})
 
-    return {"access_token": token, "token_type": "bearer"}
+    return {
+        "access_token": token,
+        "token_type": "bearer"
+    }
