@@ -50,24 +50,27 @@ export default function Login() {
           Welcome Back ✨
         </h2>
 
+        {/* EMAIL */}
         <input
           type="email"
           required
-          className="w-full mb-4 p-3 rounded-lg bg-white/10 text-white"
+          className="w-full mb-4 p-3 rounded-lg bg-white/10 text-white placeholder-gray-400 outline-none focus:ring-2 focus:ring-purple-500"
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
 
+        {/* PASSWORD */}
         <input
           type="password"
           required
-          className="w-full mb-4 p-3 rounded-lg bg-white/10 text-white"
+          className="w-full mb-4 p-3 rounded-lg bg-white/10 text-white placeholder-gray-400 outline-none focus:ring-2 focus:ring-purple-500"
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
 
+        {/* LOGIN BUTTON */}
         <button
           type="submit"
           disabled={loading}
@@ -79,6 +82,18 @@ export default function Login() {
         >
           {loading ? "Logging in..." : "Login"}
         </button>
+
+        {/*  SIGNUP LINK (FIX ADDED) */}
+        <p className="text-gray-400 text-sm mt-4 text-center">
+          Don’t have an account?{" "}
+          <span
+            onClick={() => navigate("/signup")}
+            className="text-purple-400 cursor-pointer hover:text-purple-300 hover:underline transition"
+          >
+            Sign Up
+          </span>
+        </p>
+
       </form>
     </div>
   );
