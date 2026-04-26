@@ -7,21 +7,19 @@ from app.db.database import get_db
 from app.models.user import User
 from app.core.security import verify_password, get_password_hash, create_token
 
-#  load env
 load_dotenv()
 
+
 router = APIRouter(
+    prefix="/auth",
     tags=["Auth"]
 )
 
 
-# =========================
-#    SIGNUP
-# =========================
-@router.post("/auth/signup")
+# REMOVE /auth FROM PATH
+@router.post("/signup")
 def signup(user_data: dict, db: Session = Depends(get_db)):
 
-    # check if user already exists
     existing_user = db.query(User).filter(User.email == user_data["email"]).first()
     if existing_user:
         raise HTTPException(status_code=400, detail="User already exists")
@@ -38,10 +36,7 @@ def signup(user_data: dict, db: Session = Depends(get_db)):
     return {"message": "User created successfully"}
 
 
-# =========================
-#    LOGIN
-# =========================
-@router.post("/auth/login")
+@router.post("/login")
 def login(
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: Session = Depends(get_db)
@@ -51,7 +46,6 @@ def login(
     if not user or not verify_password(form_data.password, user.hashed_password):
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
-    #  USE CENTRAL TOKEN FUNCTION
     token = create_token({"user_id": user.id})
 
     return {

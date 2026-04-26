@@ -11,11 +11,11 @@ app = FastAPI(
     version="1.0.0"
 )
 
+#  Allowed origins
 origins = [
     "http://localhost:5173",
     "https://skytrack-beta.vercel.app",
 ]
-
 
 app.add_middleware(
     CORSMiddleware,
@@ -25,14 +25,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Create tables
+#  Create DB tables
 Base.metadata.create_all(bind=engine)
 
-# Include routes
-app.include_router(auth.router, prefix="/auth")
+#  Include routers
+app.include_router(auth.router)
 app.include_router(product_routes.router)
 
-
+#  Root route
 @app.get("/")
 def root():
     return {"message": "SkyTrack API Running !!!"}
