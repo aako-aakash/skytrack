@@ -1,50 +1,48 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from app.db.database import SessionLocal
-from app.models.user import User
-from app.schemas.user import UserCreate, UserLogin
-from app.core.security import hash_password, verify_password, create_token
+from jose import jwt
 from fastapi.security import OAuth2PasswordRequestForm
+import os
+
+from app.db.database import get_db
+from app.models.user import User
+from app.core.security import verify_password, get_password_hash
 
 router = APIRouter()
 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+SECRET_KEY = os.getenv("SECRET_KEY")
+ALGORITHM = os.getenv("ALGORITHM", "HS256")
 
-@router.post("/signup")
-def signup(user: UserCreate, db: Session = Depends(get_db)):
-    existing = db.query(User).filter(User.email == user.email).first()
-    if existing:
-        raise HTTPException(400, "User already exists")
 
-    new_user = User(
-        email=user.email,
-        password=hash_password(user.password)
+@router.post("/auth/signup")
+def signup(user_data: dict, db: Session = Depends(get_db)):
+    user = User(
+        email=user_data["email"],
+        hashed_password=get_password_hash(user_data["password"])
     )
-    db.add(new_user)
+
+    db.add(user)
     db.commit()
+    db.refresh(user)
 
     return {"message": "User created"}
 
 
-@router.post("/login")
-def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+@router.post("/auth/login")
+def login(
+    form_data: OAuth2PasswordRequestForm = Depends(),
+    db: Session = Depends(get_db)
+):
+    user = db.query(User).filter(User.email == form_data.username).first()
 
-    email = form_data.username   
-    password = form_data.password
+    if not user or not verify_password(form_data.password, user.hashed_password):
+        raise HTTPException(status_code=401, detail="Invalid credentials")
 
-    db_user = db.query(User).filter(User.email == email).first()
+    # 🔥 FIX: INCLUDE USER ID
+    token = jwt.encode(
+        {"user_id": user.id},
+        SECRET_KEY,
+        algorithm=ALGORITHM
+    )
 
-    if not db_user or not verify_password(password, db_user.password):
-        raise HTTPException(400, "Invalid credentials")
-
-    token = create_token({"sub": db_user.email})
-
-    return {
-        "access_token": token,
-        "token_type": "bearer"
-    }
+    return {"access_token": token, "token_type": "bearer"}
