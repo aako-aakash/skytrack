@@ -5,8 +5,7 @@ SkyTrack is a full-stack web application that allows users to manage products, t
 ---
 
 ## 🌐 Live Demo
-Frontend: https://your-vercel-link
-Backend: https://your-render-link
+👉 Live app :- ( https://skytrack-beta.vercel.app)
 
 ---
 
@@ -19,8 +18,25 @@ Backend: https://your-render-link
 - 💰 Total Inventory Value Calculation
 - 🎨 Modern UI (Glassmorphism + Gradient Design)
 - ⚡ Fast API with PostgreSQL Database
+- ⚡ Real-time UI updates (no page reload)
+- 🔔 Toast notifications for better UX
 
 ---
+
+## 📸 Screenshots
+
+### Dashboard
+![Dashboard]()
+
+### Add Product
+![Add Product]()
+
+### Charts
+![Charts]()
+
+### Login
+![Login]()
+
 
 ## 🛠 Tech Stack
 
@@ -91,6 +107,25 @@ SECRET_KEY=your_secret_key
 ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=60
 ```
+
+---
+
+## 📊 Future Improvements (v2)
+
+* 📈 Advanced analytics & predictions
+* 🧠 AI-based insights
+* 👥 Role-based access (Admin/User)
+* 📦 Product image upload
+* 🔔 Notifications system
+
+---
+
+---
+## 🤝 Contributing
+
+Contributions are welcome! Feel free to fork this repo and submit a pull request.
+---
+
 
 # 👨‍💻 Author
 
