@@ -1,7 +1,10 @@
 import { useState } from "react";
 import API from "../services/api";
+import { useNavigate } from "react-router-dom";
 
 export default function AddProduct() {
+  const navigate = useNavigate();
+
   const [form, setForm] = useState({
     name: "",
     description: "",
@@ -9,8 +12,14 @@ export default function AddProduct() {
     quantity: "",
   });
 
+  const [loading, setLoading] = useState(false); 
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (loading) return; // prevent double click
+
+    setLoading(true);
 
     try {
       await API.post("/products/", {
@@ -19,7 +28,7 @@ export default function AddProduct() {
         quantity: Number(form.quantity),
       });
 
-      // CLEAR FORM
+      // clear form
       setForm({
         name: "",
         description: "",
@@ -27,16 +36,19 @@ export default function AddProduct() {
         quantity: "",
       });
 
-      alert("Product added successfully!");
+      // redirect
+      navigate("/dashboard");
+
     } catch (err) {
       console.error(err);
       alert("Error adding product");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div className="flex justify-center mt-10">
-
       <div className="w-full max-w-md">
         <h1 className="text-2xl text-white mb-6 text-center">
           ➕ Add Product
@@ -57,7 +69,9 @@ export default function AddProduct() {
             className="w-full p-3 rounded-lg bg-white/10 text-white placeholder-gray-400 outline-none focus:ring-2 focus:ring-purple-500"
             placeholder="Description"
             value={form.description}
-            onChange={(e) => setForm({ ...form, description: e.target.value })}
+            onChange={(e) =>
+              setForm({ ...form, description: e.target.value })
+            }
           />
 
           <input
@@ -73,15 +87,24 @@ export default function AddProduct() {
             className="w-full p-3 rounded-lg bg-white/10 text-white placeholder-gray-400 outline-none focus:ring-2 focus:ring-purple-500"
             placeholder="Quantity"
             value={form.quantity}
-            onChange={(e) => setForm({ ...form, quantity: e.target.value })}
+            onChange={(e) =>
+              setForm({ ...form, quantity: e.target.value })
+            }
           />
 
-          <button className="w-full bg-gradient-to-r from-purple-500 to-indigo-500 p-3 rounded-lg font-semibold hover:scale-[1.02] transition">
-            Add Product
+          <button
+            type="submit"
+            disabled={loading}
+            className={`w-full p-3 rounded-lg font-semibold transition ${
+              loading
+                ? "bg-gray-500 cursor-not-allowed"
+                : "bg-gradient-to-r from-purple-500 to-indigo-500 hover:scale-[1.02]"
+            }`}
+          >
+            {loading ? "Adding..." : "Add Product"}
           </button>
         </form>
       </div>
-
     </div>
   );
 }
