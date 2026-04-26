@@ -1,15 +1,20 @@
 import { useState } from "react";
 import API from "../services/api";
 import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
+
+    if (loading) return;
+    setLoading(true);
 
     try {
       const formData = new URLSearchParams();
@@ -23,10 +28,14 @@ export default function Login() {
       });
 
       localStorage.setItem("token", res.data.access_token);
+
+      toast.success("Login successful 🚀");
       navigate("/dashboard");
+
     } catch (err) {
-      console.error(err);
-      alert("Login failed. Check credentials.");
+      toast.error("Invalid email or password ❌");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -41,44 +50,35 @@ export default function Login() {
           Welcome Back ✨
         </h2>
 
-        {/* EMAIL */}
         <input
           type="email"
           required
-          className="w-full mb-4 p-3 rounded-lg bg-white/10 text-white placeholder-gray-400 outline-none focus:ring-2 focus:ring-purple-500"
+          className="w-full mb-4 p-3 rounded-lg bg-white/10 text-white"
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
 
-        {/* PASSWORD */}
         <input
           type="password"
           required
-          className="w-full mb-4 p-3 rounded-lg bg-white/10 text-white placeholder-gray-400 outline-none focus:ring-2 focus:ring-purple-500"
+          className="w-full mb-4 p-3 rounded-lg bg-white/10 text-white"
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
 
-        {/* LOGIN BUTTON */}
         <button
           type="submit"
-          className="w-full bg-gradient-to-r from-purple-500 to-indigo-500 p-3 rounded-lg font-semibold hover:scale-105 transition"
+          disabled={loading}
+          className={`w-full p-3 rounded-lg font-semibold transition ${
+            loading
+              ? "bg-gray-500 cursor-not-allowed"
+              : "bg-gradient-to-r from-purple-500 to-indigo-500 hover:scale-105"
+          }`}
         >
-          Login
+          {loading ? "Logging in..." : "Login"}
         </button>
-
-        {/* SIGNUP LINK */}
-        <p className="text-gray-400 text-sm mt-4 text-center">
-          Don’t have an account?{" "}
-          <span
-            onClick={() => navigate("/signup")}
-            className="text-purple-400 cursor-pointer hover:underline"
-          >
-            Sign Up
-          </span>
-        </p>
       </form>
     </div>
   );
