@@ -5,7 +5,7 @@ SkyTrack is a full-stack web application that allows users to manage products, t
 ---
 
 ## 🌐 Live Demo
-👉 Live app :- ( https://skytrack-beta.vercel.app)
+  https://skytrack-beta.vercel.app
 
 ---
 
@@ -26,16 +26,16 @@ SkyTrack is a full-stack web application that allows users to manage products, t
 ## 📸 Screenshots
 
 ### Dashboard
-![Dashboard]()
+![Dashboard](https://github.com/aako-aakash/skytrack/blob/main/frontend/public/SkyTrack_Dashboard1.png?raw=true)
 
 ### Add Product
-![Add Product]()
+![Add Product](https://github.com/aako-aakash/skytrack/blob/main/frontend/public/SkyTrack_Add_product.png?raw=true)
 
 ### Charts
-![Charts]()
+![Charts](https://github.com/aako-aakash/skytrack/blob/main/frontend/public/SkyTrack_Dashboard2.png?raw=true)
 
 ### Login
-![Login]()
+![Login](https://github.com/aako-aakash/skytrack/blob/main/frontend/public/SkyTrack_Login_page.png?raw=true)
 
 
 ## 🛠 Tech Stack
