@@ -1,4 +1,4 @@
-# 🚀 SkyTrack – Product Inventory & Analytics System
+# 📦 SkyTrack – Product Inventory & Analytics System
 
 SkyTrack is a full-stack web application that allows users to manage products, track inventory, and visualize analytics through an interactive dashboard.
 
@@ -84,12 +84,13 @@ npm run dev
 ```
 
 🔐 Environment Variables
+```
 Backend (.env)
 DATABASE_URL=your_database_url
 SECRET_KEY=your_secret_key
 ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=60
-
+```
 
 # 👨‍💻 Author
 
