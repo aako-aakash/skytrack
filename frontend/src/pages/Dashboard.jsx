@@ -34,50 +34,44 @@ export default function Dashboard() {
     fetchProducts();
   }, []);
 
-  // DELETE WITH UNDO
+  // DELETE WITH REAL UNDO
   const handleDelete = (product) => {
-      const previousProducts = [...products];
+    const previousProducts = [...products];
 
-      // remove from UI instantly
-      setProducts((prev) => prev.filter((p) => p.id !== product.id));
+    setProducts((prev) => prev.filter((p) => p.id !== product.id));
 
-      // create delay timer
-      const deleteTimeout = setTimeout(async () => {
-        try {
-          await API.delete(`/products/${product.id}`);
-          toast.success("Deleted permanently 🗑️");
-        } catch (err) {
-          console.error(err);
-          setProducts(previousProducts);
-          toast.error("Delete failed ❌");
-        }
-      }, 5000); // 5 seconds delay
+    const deleteTimeout = setTimeout(async () => {
+      try {
+        await API.delete(`/products/${product.id}`);
+        toast.success("Deleted permanently 🗑️");
+      } catch (err) {
+        console.error(err);
+        setProducts(previousProducts);
+        toast.error("Delete failed ❌");
+      }
+    }, 5000);
 
-      const toastId = toast(
-        (t) => (
-          <div className="flex items-center gap-4">
-            <span>Product deleted</span>
+    toast(
+      (t) => (
+        <div className="flex items-center gap-4">
+          <span>Product deleted</span>
 
-            <button
-              onClick={() => {
-                // cancel delete
-                clearTimeout(deleteTimeout);
-
-                // restore UI
-                setProducts(previousProducts);
-
-                toast.dismiss(t.id);
-                toast.success("Restored ✅");
-              }}
-              className="bg-blue-500 px-3 py-1 rounded text-white"
-            >
-              Undo
-            </button>
-          </div>
-        ),
-        { duration: 5000 }
-      );
-    };
+          <button
+            onClick={() => {
+              clearTimeout(deleteTimeout);
+              setProducts(previousProducts);
+              toast.dismiss(t.id);
+              toast.success("Restored ✅");
+            }}
+            className="bg-blue-500 px-3 py-1 rounded text-white"
+          >
+            Undo
+          </button>
+        </div>
+      ),
+      { duration: 5000 }
+    );
+  };
 
   const filteredProducts = products.filter((p) =>
     p.name.toLowerCase().includes(search.toLowerCase())
@@ -135,24 +129,36 @@ export default function Dashboard() {
         ))}
       </div>
 
-      {/* charts remain same */}
+      {/* 📊 CHARTS */}
       <div className="grid md:grid-cols-2 gap-6">
+
+        {/* BAR CHART */}
         <div className="bg-white/5 p-6 rounded-xl">
           <h2 className="text-white mb-4">💰 Price Distribution</h2>
 
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={filteredProducts}>
-              <XAxis dataKey="name" stroke="#aaa" />
-              <YAxis stroke="#aaa" />
-              <Tooltip />
+              <XAxis dataKey="name" stroke="#ccc" />
+              <YAxis stroke="#ccc" />
 
-              <Bar dataKey="price">
-                <LabelList dataKey="price" position="top" />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: "#1f2937",
+                  border: "none",
+                  borderRadius: "8px",
+                  color: "#fff",
+                }}
+              />
+
+              {/* 🔥 FIXED COLOR HERE */}
+              <Bar dataKey="price" fill="#8b5cf6" radius={[6, 6, 0, 0]}>
+                <LabelList dataKey="price" position="top" fill="#fff" />
               </Bar>
             </BarChart>
           </ResponsiveContainer>
         </div>
 
+        {/* PIE CHART */}
         <div className="bg-white/5 p-6 rounded-xl">
           <h2 className="text-white mb-4">📦 Quantity Distribution</h2>
 
@@ -163,12 +169,22 @@ export default function Dashboard() {
                   <Cell key={i} fill={COLORS[i % COLORS.length]} />
                 ))}
               </Pie>
-              <Tooltip />
+
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: "#1f2937",
+                  border: "none",
+                  borderRadius: "8px",
+                  color: "#fff",
+                }}
+              />
             </PieChart>
           </ResponsiveContainer>
         </div>
+
       </div>
 
+      {/* TOTAL */}
       <div className="bg-gradient-to-r from-purple-700 to-cyan-700 p-6 rounded-xl text-center">
         <h2 className="text-white text-lg">Total Inventory Value</h2>
         <p className="text-3xl text-green-400 font-bold mt-2">
