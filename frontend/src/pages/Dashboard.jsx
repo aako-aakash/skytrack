@@ -34,54 +34,50 @@ export default function Dashboard() {
     fetchProducts();
   }, []);
 
-  // 🔥 FIXED DELETE WITH UNDO
-  const handleDelete = async (product) => {
-    const previousProducts = [...products];
+  // DELETE WITH UNDO
+  const handleDelete = (product) => {
+      const previousProducts = [...products];
 
-    // optimistic UI remove
-    setProducts((prev) => prev.filter((p) => p.id !== product.id));
+      // remove from UI instantly
+      setProducts((prev) => prev.filter((p) => p.id !== product.id));
 
-    let undone = false;
+      // create delay timer
+      const deleteTimeout = setTimeout(async () => {
+        try {
+          await API.delete(`/products/${product.id}`);
+          toast.success("Deleted permanently 🗑️");
+        } catch (err) {
+          console.error(err);
+          setProducts(previousProducts);
+          toast.error("Delete failed ❌");
+        }
+      }, 5000); // 5 seconds delay
 
-    const toastId = toast(
-      (t) => (
-        <div className="flex items-center gap-4">
-          <span>Product deleted</span>
+      const toastId = toast(
+        (t) => (
+          <div className="flex items-center gap-4">
+            <span>Product deleted</span>
 
-          <button
-            onClick={() => {
-              undone = true;
+            <button
+              onClick={() => {
+                // cancel delete
+                clearTimeout(deleteTimeout);
 
-              // 🔥 RESTORE FROM LOCAL STATE
-              setProducts(previousProducts);
+                // restore UI
+                setProducts(previousProducts);
 
-              toast.dismiss(t.id);
-              toast.success("Restored ✅");
-            }}
-            className="bg-blue-500 px-3 py-1 rounded text-white"
-          >
-            Undo
-          </button>
-        </div>
-      ),
-      { duration: 5000 }
-    );
-
-    try {
-      await API.delete(`/products/${product.id}`);
-
-      // nothing needed if success
-
-    } catch (err) {
-      console.error(err);
-
-      // rollback if API fails
-      setProducts(previousProducts);
-
-      toast.error("Delete failed ❌");
-      toast.dismiss(toastId);
-    }
-  };
+                toast.dismiss(t.id);
+                toast.success("Restored ✅");
+              }}
+              className="bg-blue-500 px-3 py-1 rounded text-white"
+            >
+              Undo
+            </button>
+          </div>
+        ),
+        { duration: 5000 }
+      );
+    };
 
   const filteredProducts = products.filter((p) =>
     p.name.toLowerCase().includes(search.toLowerCase())
