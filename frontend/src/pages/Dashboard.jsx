@@ -34,57 +34,54 @@ export default function Dashboard() {
     fetchProducts();
   }, []);
 
-  //  DELETE WITH UNDO
+  // 🔥 FIXED DELETE WITH UNDO
   const handleDelete = async (product) => {
-      const previousProducts = [...products];
+    const previousProducts = [...products];
 
-      // optimistic UI
-      setProducts((prev) => prev.filter((p) => p.id !== product.id));
+    // optimistic UI remove
+    setProducts((prev) => prev.filter((p) => p.id !== product.id));
 
-      let undone = false;
+    let undone = false;
 
-      const toastId = toast(
-        (t) => (
-          <div className="flex items-center gap-4">
-            <span>Product deleted</span>
+    const toastId = toast(
+      (t) => (
+        <div className="flex items-center gap-4">
+          <span>Product deleted</span>
 
-            <button
-              onClick={async () => {
-                undone = true;
+          <button
+            onClick={() => {
+              undone = true;
 
-                // 🔥 fetch correct data again
-                await fetchProducts();
+              // 🔥 RESTORE FROM LOCAL STATE
+              setProducts(previousProducts);
 
-                toast.dismiss(t.id);
-                toast.success("Restored ✅");
-              }}
-              className="bg-blue-500 px-3 py-1 rounded text-white"
-            >
-              Undo
-            </button>
-          </div>
-        ),
-        { duration: 5000 }
-      );
+              toast.dismiss(t.id);
+              toast.success("Restored ✅");
+            }}
+            className="bg-blue-500 px-3 py-1 rounded text-white"
+          >
+            Undo
+          </button>
+        </div>
+      ),
+      { duration: 5000 }
+    );
 
-      try {
-        await API.delete(`/products/${product.id}`);
+    try {
+      await API.delete(`/products/${product.id}`);
 
-        // if not undone → keep state
-        if (!undone) {
-          // nothing
-        }
+      // nothing needed if success
 
-      } catch (err) {
-        console.error(err);
+    } catch (err) {
+      console.error(err);
 
-        // restore UI
-        setProducts(previousProducts);
+      // rollback if API fails
+      setProducts(previousProducts);
 
-        toast.error("Delete failed ❌");
-        toast.dismiss(toastId);
-      }
-    };
+      toast.error("Delete failed ❌");
+      toast.dismiss(toastId);
+    }
+  };
 
   const filteredProducts = products.filter((p) =>
     p.name.toLowerCase().includes(search.toLowerCase())
@@ -94,57 +91,46 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-8">
-      {/* TITLE */}
       <h1 className="text-3xl text-white font-bold">📊 Dashboard</h1>
 
-      {/* SEARCH */}
       <input
         type="text"
         placeholder="🔍 Search products..."
-        className="w-full max-w-md p-3 rounded-xl bg-white/10 text-white placeholder-gray-400 outline-none focus:ring-2 focus:ring-purple-500"
+        className="w-full max-w-md p-3 rounded-xl bg-white/10 text-white"
         value={search}
         onChange={(e) => setSearch(e.target.value)}
       />
 
-      {/* PRODUCT LIST */}
       <div className="grid gap-4">
         {filteredProducts.length === 0 && (
-          <p className="text-gray-400 text-center">
-            No products found 🚀
-          </p>
+          <p className="text-gray-400 text-center">No products found 🚀</p>
         )}
 
         {filteredProducts.map((p) => (
           <div
             key={p.id}
-            className="bg-white/5 backdrop-blur-xl border border-white/10 p-5 rounded-xl flex justify-between items-center hover:scale-[1.01] transition"
+            className="bg-white/5 p-5 rounded-xl flex justify-between items-center"
           >
             <div>
               <h2 className="text-lg font-semibold text-purple-300">
                 {p.name}
               </h2>
               <p className="text-gray-400">{p.description}</p>
-
-              <p className="text-green-400 font-semibold">
-                ₹ {p.price}
-              </p>
-
-              <p className="text-cyan-400 text-sm">
-                📦 Qty: {p.quantity}
-              </p>
+              <p className="text-green-400 font-semibold">₹ {p.price}</p>
+              <p className="text-cyan-400 text-sm">📦 Qty: {p.quantity}</p>
             </div>
 
             <div className="space-x-2">
               <button
                 onClick={() => navigate(`/edit/${p.id}`)}
-                className="bg-purple-500 px-3 py-1 rounded-lg hover:bg-purple-600 transition"
+                className="bg-purple-500 px-3 py-1 rounded-lg"
               >
                 Edit
               </button>
 
               <button
                 onClick={() => handleDelete(p)}
-                className="bg-red-500/90 hover:bg-red-600 px-3 py-1 rounded-lg transition shadow-md"
+                className="bg-red-500 px-3 py-1 rounded-lg"
               >
                 Delete
               </button>
@@ -153,82 +139,41 @@ export default function Dashboard() {
         ))}
       </div>
 
-      {/* CHARTS */}
+      {/* charts remain same */}
       <div className="grid md:grid-cols-2 gap-6">
-        {/* PRICE CHART */}
-        <div className="bg-white/5 p-6 rounded-xl border border-white/10 shadow-xl hover:shadow-purple-500/20 transition">
-          <h2 className="text-white mb-4 text-lg font-semibold">
-            💰 Price Distribution
-          </h2>
+        <div className="bg-white/5 p-6 rounded-xl">
+          <h2 className="text-white mb-4">💰 Price Distribution</h2>
 
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={filteredProducts}>
-              <defs>
-                <linearGradient id="colorPrice" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#a78bfa" />
-                  <stop offset="100%" stopColor="#6366f1" />
-                </linearGradient>
-              </defs>
-
               <XAxis dataKey="name" stroke="#aaa" />
               <YAxis stroke="#aaa" />
+              <Tooltip />
 
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: "#0f172a",
-                  border: "1px solid #6366f1",
-                  borderRadius: "10px",
-                }}
-                formatter={(value) => `₹ ${value}`}
-              />
-
-              <Bar
-                dataKey="price"
-                fill="url(#colorPrice)"
-                radius={[10, 10, 0, 0]}
-                animationDuration={1200}
-              >
+              <Bar dataKey="price">
                 <LabelList dataKey="price" position="top" />
               </Bar>
             </BarChart>
           </ResponsiveContainer>
         </div>
 
-        {/* QUANTITY CHART */}
-        <div className="bg-white/5 p-6 rounded-xl border border-white/10 shadow-xl hover:shadow-cyan-500/20 transition">
-          <h2 className="text-white mb-4 text-lg font-semibold">
-            📦 Quantity Distribution
-          </h2>
+        <div className="bg-white/5 p-6 rounded-xl">
+          <h2 className="text-white mb-4">📦 Quantity Distribution</h2>
 
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>
-              <Pie
-                data={filteredProducts}
-                dataKey="quantity"
-                nameKey="name"
-                outerRadius={100}
-                label
-                animationDuration={1200}
-              >
-                {filteredProducts.map((_, index) => (
-                  <Cell key={index} fill={COLORS[index % COLORS.length]} />
+              <Pie data={filteredProducts} dataKey="quantity" nameKey="name">
+                {filteredProducts.map((_, i) => (
+                  <Cell key={i} fill={COLORS[i % COLORS.length]} />
                 ))}
               </Pie>
-
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: "#0f172a",
-                  border: "1px solid #22c55e",
-                  borderRadius: "10px",
-                }}
-              />
+              <Tooltip />
             </PieChart>
           </ResponsiveContainer>
         </div>
       </div>
 
-      {/* TOTAL VALUE */}
-      <div className="bg-gradient-to-r from-purple-700 to-cyan-700 p-6 rounded-xl text-center shadow-xl">
+      <div className="bg-gradient-to-r from-purple-700 to-cyan-700 p-6 rounded-xl text-center">
         <h2 className="text-white text-lg">Total Inventory Value</h2>
         <p className="text-3xl text-green-400 font-bold mt-2">
           ₹{" "}
