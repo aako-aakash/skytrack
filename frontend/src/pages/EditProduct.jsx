@@ -14,14 +14,29 @@ export default function EditProduct() {
     quantity: "",
   });
 
+  const [loading, setLoading] = useState(false);
+  const [fetching, setFetching] = useState(true);
+
   useEffect(() => {
-    API.get(`/products/${id}`).then((res) =>
-      setForm(res.data)
-    );
+    const fetchProduct = async () => {
+      try {
+        const res = await API.get(`/products/${id}`);
+        setForm(res.data);
+      } catch (err) {
+        toast.error("Failed to load product ❌");
+      } finally {
+        setFetching(false);
+      }
+    };
+
+    fetchProduct();
   }, [id]);
 
   const handleUpdate = async (e) => {
     e.preventDefault();
+
+    if (loading) return;
+    setLoading(true);
 
     try {
       await API.put(`/products/${id}`, {
@@ -36,8 +51,18 @@ export default function EditProduct() {
     } catch (err) {
       console.error(err);
       toast.error("Update failed ❌");
+    } finally {
+      setLoading(false);
     }
   };
+
+  if (fetching) {
+    return (
+      <div className="text-white text-center mt-20">
+        Loading product...
+      </div>
+    );
+  }
 
   return (
     <div className="flex justify-center mt-10">
@@ -80,8 +105,15 @@ export default function EditProduct() {
             className="w-full p-3 rounded-lg bg-white/10 text-white"
           />
 
-          <button className="w-full bg-gradient-to-r from-purple-500 to-indigo-500 p-3 rounded-lg font-semibold">
-            Update Product
+          <button
+            disabled={loading}
+            className={`w-full p-3 rounded-lg font-semibold transition ${
+              loading
+                ? "bg-gray-500 cursor-not-allowed"
+                : "bg-gradient-to-r from-purple-500 to-indigo-500 hover:scale-105"
+            }`}
+          >
+            {loading ? "Updating..." : "Update Product"}
           </button>
         </form>
       </div>

@@ -13,6 +13,8 @@ export default function AddProduct() {
     quantity: "",
   });
 
+  const [loading, setLoading] = useState(false);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -20,6 +22,9 @@ export default function AddProduct() {
       toast.error("Please fill all required fields");
       return;
     }
+
+    if (loading) return;
+    setLoading(true);
 
     try {
       await API.post("/products/", {
@@ -30,7 +35,6 @@ export default function AddProduct() {
 
       toast.success("Product added successfully 🚀");
 
-      // clear form
       setForm({
         name: "",
         description: "",
@@ -38,12 +42,13 @@ export default function AddProduct() {
         quantity: "",
       });
 
-      // redirect
       navigate("/dashboard");
 
     } catch (err) {
       console.error(err);
       toast.error("Failed to add product ❌");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -88,8 +93,15 @@ export default function AddProduct() {
             onChange={(e) => setForm({ ...form, quantity: e.target.value })}
           />
 
-          <button className="w-full bg-gradient-to-r from-purple-500 to-indigo-500 p-3 rounded-lg font-semibold">
-            Add Product
+          <button
+            disabled={loading}
+            className={`w-full p-3 rounded-lg font-semibold transition ${
+              loading
+                ? "bg-gray-500 cursor-not-allowed"
+                : "bg-gradient-to-r from-purple-500 to-indigo-500 hover:scale-105"
+            }`}
+          >
+            {loading ? "Adding..." : "Add Product"}
           </button>
         </form>
       </div>
