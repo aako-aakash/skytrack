@@ -36,41 +36,55 @@ export default function Dashboard() {
 
   //  DELETE WITH UNDO
   const handleDelete = async (product) => {
-    const previousProducts = [...products];
+      const previousProducts = [...products];
 
-    // remove instantly (optimistic UI)
-    setProducts((prev) => prev.filter((p) => p.id !== product.id));
+      // optimistic UI
+      setProducts((prev) => prev.filter((p) => p.id !== product.id));
 
-    const toastId = toast(
-      (t) => (
-        <div className="flex items-center gap-4">
-          <span>Product deleted</span>
+      let undone = false;
 
-          <button
-            onClick={() => {
-              // undo
-              setProducts(previousProducts);
-              toast.dismiss(t.id);
-              toast.success("Restored ✅");
-            }}
-            className="bg-blue-500 px-3 py-1 rounded text-white"
-          >
-            Undo
-          </button>
-        </div>
-      ),
-      { duration: 5000 }
-    );
+      const toastId = toast(
+        (t) => (
+          <div className="flex items-center gap-4">
+            <span>Product deleted</span>
 
-    try {
-      await API.delete(`/products/${product.id}`);
-    } catch (err) {
-      console.error(err);
-      setProducts(previousProducts);
-      toast.error("Delete failed ❌");
-      toast.dismiss(toastId);
-    }
-  };
+            <button
+              onClick={async () => {
+                undone = true;
+
+                // 🔥 fetch correct data again
+                await fetchProducts();
+
+                toast.dismiss(t.id);
+                toast.success("Restored ✅");
+              }}
+              className="bg-blue-500 px-3 py-1 rounded text-white"
+            >
+              Undo
+            </button>
+          </div>
+        ),
+        { duration: 5000 }
+      );
+
+      try {
+        await API.delete(`/products/${product.id}`);
+
+        // if not undone → keep state
+        if (!undone) {
+          // nothing
+        }
+
+      } catch (err) {
+        console.error(err);
+
+        // restore UI
+        setProducts(previousProducts);
+
+        toast.error("Delete failed ❌");
+        toast.dismiss(toastId);
+      }
+    };
 
   const filteredProducts = products.filter((p) =>
     p.name.toLowerCase().includes(search.toLowerCase())
