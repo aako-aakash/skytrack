@@ -1,4 +1,7 @@
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, String
+from sqlalchemy.dialects.postgresql import UUID
+import uuid
+
 from app.db.database import Base
 
 
@@ -10,4 +13,4 @@ class Product(Base):
     description = Column(String)
     price = Column(Integer)
     quantity = Column(Integer)
-    user_id = Column(Integer, ForeignKey("users.id"))
+    user_id = Column(UUID(as_uuid=True), nullable=False)

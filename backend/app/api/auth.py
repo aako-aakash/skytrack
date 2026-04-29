@@ -9,14 +9,13 @@ from app.core.security import verify_password, get_password_hash, create_token
 
 load_dotenv()
 
-
 router = APIRouter(
     prefix="/auth",
     tags=["Auth"]
 )
 
 
-# REMOVE /auth FROM PATH
+#  SIGNUP
 @router.post("/signup")
 def signup(user_data: dict, db: Session = Depends(get_db)):
 
@@ -36,6 +35,7 @@ def signup(user_data: dict, db: Session = Depends(get_db)):
     return {"message": "User created successfully"}
 
 
+#  LOGIN
 @router.post("/login")
 def login(
     form_data: OAuth2PasswordRequestForm = Depends(),
@@ -46,7 +46,8 @@ def login(
     if not user or not verify_password(form_data.password, user.hashed_password):
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
-    token = create_token({"user_id": user.id})
+    #
+    token = create_token({"user_id": str(user.id)})
 
     return {
         "access_token": token,

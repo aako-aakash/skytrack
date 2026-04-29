@@ -1,17 +1,19 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from typing import List
 
 from app.db.database import get_db
 from app.models.product import Product
-from app.schemas.product import ProductCreate
+from app.schemas.product import ProductCreate, ProductResponse
 from app.api.deps import get_current_user
 
 router = APIRouter(
-     tags=["Products"]
+    tags=["Products"]
 )
 
 
-@router.post("/products/")
+#  CREATE PRODUCT
+@router.post("/products/", response_model=ProductResponse)
 def create_product(
     product: ProductCreate,
     db: Session = Depends(get_db),
@@ -32,17 +34,21 @@ def create_product(
     return new_product
 
 
-@router.get("/products/")
+# GET ALL PRODUCTS (USER SPECIFIC)
+@router.get("/products/", response_model=List[ProductResponse])
 def get_products(
     db: Session = Depends(get_db),
     current_user = Depends(get_current_user)
 ):
-    return db.query(Product).filter(
+    products = db.query(Product).filter(
         Product.user_id == current_user.id
     ).all()
 
+    return products
 
-@router.get("/products/{id}")
+
+#  GET SINGLE PRODUCT
+@router.get("/products/{id}", response_model=ProductResponse)
 def get_product(
     id: int,
     db: Session = Depends(get_db),
@@ -54,12 +60,13 @@ def get_product(
     ).first()
 
     if not product:
-        raise HTTPException(status_code=404, detail="Not found")
+        raise HTTPException(status_code=404, detail="Product not found")
 
     return product
 
 
-@router.put("/products/{id}")
+# UPDATE PRODUCT
+@router.put("/products/{id}", response_model=ProductResponse)
 def update_product(
     id: int,
     updated: ProductCreate,
@@ -72,7 +79,7 @@ def update_product(
     ).first()
 
     if not product:
-        raise HTTPException(status_code=404, detail="Not found")
+        raise HTTPException(status_code=404, detail="Product not found")
 
     product.name = updated.name
     product.description = updated.description
@@ -80,9 +87,12 @@ def update_product(
     product.quantity = updated.quantity
 
     db.commit()
+    db.refresh(product)
+
     return product
 
 
+#  DELETE PRODUCT
 @router.delete("/products/{id}")
 def delete_product(
     id: int,
@@ -95,9 +105,13 @@ def delete_product(
     ).first()
 
     if not product:
-        raise HTTPException(status_code=404, detail="Not found")
+        raise HTTPException(status_code=404, detail="Product not found")
 
     db.delete(product)
     db.commit()
 
-    return {"message": "Product Deleted !"}
+    return {"message": "Product deleted successfully"}
+
+
+
+
